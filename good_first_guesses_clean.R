@@ -28,7 +28,7 @@ word_df <- substr(
   unlist(.) %>%
   tibble(word = .) 
 
-score_one_word <- function(guess, dict, pos_score = 3, let_score = 1) {
+score_one_word <- function(guess, dict, pos_score = 3, let_score = 2) {
   dat <- expand.grid(
     g_pos = 1:nchar(guess),
     d_word = dict
@@ -70,21 +70,19 @@ score_one_word <- function(guess, dict, pos_score = 3, let_score = 1) {
         T ~ raw_score
       )
     ) 
-  
   score_out <- dat %>%
     group_by(guess = g_word, dict_word = d_word) %>%
     summarize(score = sum(score), .groups = "drop") %>%
     group_by(guess) %>%
     summarize(score = mean(score), .groups = "drop") %>%
     pull(score)
-  
+
   return(score_out)
-  
 }
 
 # example use:
 score_one_word("terra", dict = c("irate", "fishy"))
-score_one_word("terra", dict = word_df$word)
+test <- score_one_word("terra", dict = word_df$word)
 
 # How long will it take to score 10 words?
 # bench::mark(
@@ -95,6 +93,8 @@ score_one_word("terra", dict = word_df$word)
 #                                   .f = score_one_word, 
 #                                   dict = word_df$word))
 # )
+
+# Good enough!
 
 score_df <- word_df %>%
   mutate(score = purrr::map_dbl(.x = word, 
